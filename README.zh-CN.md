@@ -4,7 +4,7 @@
 
 [English README](./README.md)
 
-<a href="./index.html"><strong>▶ 打开前端 Demo</strong></a>
+<a href="https://ciel833.github.io/Carcosa/"><strong>▶ 打开前端 Demo</strong></a>
 
 > 当人类语言无法承载秘密，只有旧日支配者的低语才能替你守护真相。
 

@@ -3,7 +3,7 @@
 
 Encode boring text into unnameable eldritch chants.
 
-<a href="./index.html"><strong>▶ Open the Frontend Demo</strong></a>
+<a href="https://ciel833.github.io/Carcosa/"><strong>▶ Open the Frontend Demo</strong></a>
 
 > When human language fails to bear secrets, only the whispers of the Great Old Ones can guard the truth for you.
 
