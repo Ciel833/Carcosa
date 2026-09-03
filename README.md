@@ -88,6 +88,14 @@ npm test        # = node --test
 
 Coverage: full round-trips for every mode × with/without password across Chinese, emoji (4-byte UTF-8), combining marks, RTL, NUL, leading-zero, all-`0xFF`, empty, and 27³-byte header-boundary payloads; vocab properties (table size, prefix-freeness, delimiter discipline); mangled-ciphertext robustness; keystream determinism; garbage rejection; a 1 MB perf smoke. Grammar layer: prose/verse cross-style equivalence, per-mode alphabet safety (affix letters + marks never collide with tokens), prose determinism, mangled-prose robustness, and default-prose/verse CLI style tests.
 
+## Planned features
+
+Future releases are planned to add:
+
+- Modifier density controls
+- Sentence-randomness controls
+- Rotor encryption
+
 ## License
 
 MIT © 2026 Ciel
