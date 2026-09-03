@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carcosa</title>
+<style>
+  :root {
+    --bg: #030a0a;
+    --bg-deep: #010404;
+    --panel: #0a1d1d;
+    --panel-2: #061414;
+    --line: #14403a;
+    --ink: #cde8dd;
+    --muted: #5e8f80;
+    --accent: #6ff3c8;
+    --accent-dim: #2d8f74;
+    --violet: #9a7bd8;
+    --danger: #e06a6a;
+    --glow: 0 0 14px rgba(111, 243, 200, 0.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: system-ui, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1000px 520px at 50% -8%, rgba(42, 110, 96, 0.28), transparent 70%),
+      radial-gradient(720px 420px at 88% 108%, rgba(90, 60, 130, 0.16), transparent 70%),
+      radial-gradient(640px 380px at 6% 100%, rgba(20, 80, 70, 0.18), transparent 70%),
+      var(--bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+  .page { width: min(920px, 100%); }
+  header { text-align: center; margin-bottom: 22px; }
+  h1 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    text-shadow: var(--glow), 0 0 34px rgba(111, 243, 200, 0.22);
+    font-size: clamp(22px, 4.2vw, 34px);
+  }
+  .subtitle {
+    margin: 10px 0 0;
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .subtitle .cn { color: #9fb8ae; letter-spacing: 0.1em; text-transform: none; font-size: 13px; }
+  .panel {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 22px 18px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(111, 243, 200, 0.06);
+  }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tab {
+    flex: 1 1 130px;
+    padding: 9px 10px;
+    background: #071313;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .tab small { display: block; font-size: 11px; letter-spacing: 0.08em; color: #4d7969; margin-top: 2px; }
+  .tab:hover { border-color: var(--accent-dim); }
+  .tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #03201a;
+    box-shadow: 0 0 18px rgba(111, 243, 200, 0.4);
+    font-weight: 600;
+  }
+  .tab.active small { color: #06463a; }
+  .style-toggle { display: flex; gap: 8px; margin-top: 14px; }
+  .st {
+    flex: 1 1 200px;
+    padding: 7px 10px;
+    background: #071313;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .st small { display: block; font-size: 11px; color: #4d7969; margin-top: 1px; }
+  .st:hover { border-color: var(--accent-dim); }
+  .st.active {
+    background: var(--violet);
+    border-color: var(--violet);
+    color: #13052d;
+    font-weight: 600;
+    box-shadow: 0 0 14px rgba(154, 123, 216, 0.35);
+  }
+  .st.active small { color: #2b1660; }
+  .lore {
+    min-height: 40px;
+    margin: 14px 2px 18px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #8db3a6;
+    border-left: 2px solid var(--accent-dim);
+    padding: 2px 0 2px 12px;
+  }
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    background: #030e0e;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 15px;
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+  }
+  textarea:focus, input[type="password"]:focus { outline: none; border-color: var(--accent-dim); }
+  #output { color: var(--accent); }
+  .pass-row { display: flex; align-items: center; gap: 12px; }
+  input[type="password"] {
+    flex: 1;
+    background: #030e0e;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  .pass-hint { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 16px; }
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: #061313;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  button:hover { border-color: var(--accent-dim); filter: brightness(1.15); }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #03201a;
+    font-weight: 600;
+    box-shadow: 0 0 14px rgba(111, 243, 200, 0.3);
+  }
+  button.primary:hover { filter: brightness(1.06); }
+  .status {
+    min-height: 20px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    white-space: pre-wrap;
+  }
+  .status.error { color: var(--danger); }
+  .footer {
+    margin-top: 26px;
+    text-align: center;
+    font-size: 12px;
+    color: #457264;
+    line-height: 1.8;
+  }
+  .footer b { color: #6fae98; font-weight: 500; }
+  .san {
+    display: inline-block;
+    border: 1px solid var(--violet);
+    color: var(--violet);
+    border-radius: 999px;
+    padding: 1px 10px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+  <h1>Carcosa</h1>
+  <p class="subtitle"><span class="cn">Encode boring text into unnameable eldritch chants.</span><br>R&#39;lyehian · Deep One · Elder Gods</p>
+</header>
+
+<main class="panel">
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-mode="rlyehian">R&#39;lyehian<small>TERNARY · 27 SYLLABLES</small></button>
+    <button class="tab" data-mode="deepone">Deep One<small>256 SYLLABLES</small></button>
+    <button class="tab" data-mode="gods">Elder Gods<small>32 NAMES · LITANY</small></button>
+  </div>
+  <div class="style-toggle" id="style-toggle">
+    <button class="st active" data-style="prose">Prose <small>full pseudo-language article</small></button>
+    <button class="st" data-style="verse">Verse <small>original chant-style output</small></button>
+  </div>
+  <p class="lore" id="lore"></p>
+
+  <div class="field">
+    <label for="input">Plaintext / ciphertext</label>
+    <textarea id="input" placeholder="Type text to encrypt, or paste ciphertext to decrypt…"></textarea>
+  </div>
+
+  <div class="field pass-row">
+    <label for="password">Password (optional)</label>
+    <input type="password" id="password" placeholder="leave empty for no obfuscation">
+    <span class="pass-hint">toy-grade, not encryption</span>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="btn-encode">✦ Encrypt</button>
+    <button id="btn-decode">✦ Decrypt</button>
+    <button id="btn-swap">⇅ Swap</button>
+    <button id="btn-copy">Copy</button>
+    <button id="btn-sample">Random chant</button>
+  </div>
+
+  <p class="status" id="status">Ready. Pick a mode, type some text, hit encrypt.</p>
+
+  <div class="field">
+    <label for="output">Output</label>
+    <textarea id="output" readonly spellcheck="false"></textarea>
+  </div>
+</main>
+
+<footer class="footer">
+  Fully reversible · UTF-8 (English / emoji / binary) · decodes without a password too<br>
+  <b>R&#39;lyehian</b> ~8 chars/byte · <b>Deep One</b> ~5 chars/byte · <b>Elder Gods</b> ~11 chars/byte ·
+  single-input cap <span id="limit"></span> bytes </span>
+</footer>
+</div>
+
+<script src="core/base.js?v=2"></script>
+<script src="core/prng.js?v=2"></script>
+<script src="core/vocab/rlyehian.js?v=2"></script>
+<script src="core/vocab/deepone.js?v=2"></script>
+<script src="core/vocab/gods.js?v=2"></script>
+<script src="core/format.js?v=2"></script>
+<script src="core/index.js?v=2"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+
+  const LORE = {
+    rlyehian: 'Lovecraft wrote that R\'lyehian uses a ternary numeral system. This mode builds 27 syllables as onset(3) × nucleus(3) × coda(3) — every syllable is ternary at its core, echoing the eternal chant: Ph\'nglui mglw\'nafh Cthulhu R\'lyeh wgah\'nagl fhtagn.',
+    deepone: 'The Deep Ones of The Shadow over Innsmouth speak a guttural, amphibian tongue. 256 syllables are stacked from onset clusters like kth/mgl/gh and unearthly vowel nuclei — one ciphertext byte turns into exactly one syllable (and the shortest output of the three).',
+    gods: 'Data is chunked onto 32 names of the pantheon (Cthulhu, Yog-Sothoth, Azathoth, Nyarlathotep…) and laid out as a litany. Hyphens and apostrophes belong to the names (Yog-Sothoth, Y\'golonac), so this mode\'s rhythm marks are «!» and «·».'
+  };
+
+  const METADATA = {
+    rlyehian: { label: 'R\'lyehian' },
+    deepone: { label: 'Deep One' },
+    gods: { label: 'Elder Gods' }
+  };
+
+  const SAMPLES = [
+    'Iä! Iä! Cthulhu fhtagn!',
+    'In his house at R\'lyeh dead Cthulhu waits dreaming.',
+    'Ph\'nglui mglw\'nafh Cthulhu R\'lyeh wgah\'nagl fhtagn',
+    'The Shadow over Innsmouth... it calls, it calls.',
+    'Do not open the book. Do not utter the name.'
+  ];
+
+  let mode = 'rlyehian';
+  let style = 'prose';
+
+  function currentMode() {
+    const active = document.querySelector('.tab.active');
+    return active ? active.dataset.mode : mode;
+  }
+
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll('.tab').forEach((t) => {
+      t.classList.toggle('active', t.dataset.mode === m);
+    });
+    $('lore').textContent = LORE[m];
+    $('status').textContent = '';
+  }
+
+  function setStyle(s) {
+    style = s;
+    document.querySelectorAll('.st').forEach((b) => {
+      b.classList.toggle('active', b.dataset.style === s);
+    });
+  }
+
+  function setStatus(msg, isError) {
+    const el = $('status');
+    el.textContent = msg;
+    el.classList.toggle('error', !!isError);
+  }
+
+
+  function run(action) {
+    const m = currentMode();
+    const password = $('password').value;
+    const input = $('input').value;
+    if (input.length === 0) { setStatus('Please enter some text.', true); return; }
+    try {
+      if (action === 'encode') {
+        $('output').value = CthulhuCipher.encodeText(input, { mode: m, style, password });
+        setStatus(`Encrypted into ${METADATA[m].label} (${style}).`);
+      } else {
+        $('output').value = CthulhuCipher.decodeText(input, { mode: m, password });
+        setStatus('Decrypted back to plaintext.');
+      }
+    } catch (err) {
+      setStatus(`Failed: ${err.message}`, true);
+    }
+  }
+
+  function copyOutput() {
+    const out = $('output');
+    if (!out.value) { setStatus('Output is empty.', true); return; }
+    const done = () => setStatus('Copied to clipboard.');
+    const fail = () => {
+      out.select();
+      document.execCommand('copy');
+      setStatus('Copied (fallback mode).');
+    };
+    if (navigator.clipboard && window.isSecureContext !== false) {
+      navigator.clipboard.writeText(out.value).then(done, fail);
+    } else {
+      fail();
+    }
+  }
+
+  $('tabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('.tab');
+    if (tab) setMode(tab.dataset.mode);
+  });
+  $('style-toggle').addEventListener('click', (e) => {
+    const btn = e.target.closest('.st');
+    if (btn) setStyle(btn.dataset.style);
+  });
+  $('btn-encode').addEventListener('click', () => run('encode'));
+  $('btn-decode').addEventListener('click', () => run('decode'));
+  $('btn-copy').addEventListener('click', copyOutput);
+  $('btn-swap').addEventListener('click', () => {
+    const src = $('output').value;
+    $('input').value = src;
+    $('output').value = '';
+    setStatus('Swapped: output moved back to input.');
+  });
+  $('btn-sample').addEventListener('click', () => {
+    $('input').value = SAMPLES[Math.floor(Math.random() * SAMPLES.length)];
+    setStatus('A random incantation has been fed to the input.');
+  });
+  $('input').addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') run('encode');
+  });
+
+  $('limit').textContent = CthulhuCipher.maxPayloadBytes('rlyehian').toLocaleString();
+  setMode('rlyehian');
+})();
+</script>
+</body>
+</html>
