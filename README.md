@@ -2,6 +2,9 @@
 [中文文档](./README.zh-CN.md)
 
 Encode boring text into unnameable eldritch chants.
+
+<a href="./index.html"><strong>▶ Open the Frontend Demo</strong></a>
+
 > When human language fails to bear secrets, only the whispers of the Great Old Ones can guard the truth for you.
 
 A **reversible** Cthulhu-Mythos cipher toy: any UTF-8 input (English, emoji, binary files etc.) can be encoded into three "Lovecraftian languages" — and decoded back losslessly. An optional password adds keystream obfuscation. Output comes in two styles:
