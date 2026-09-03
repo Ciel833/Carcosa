@@ -12,8 +12,8 @@
 
 This project was inspired by the following text transformation works and series:
 
-- 魔曰
-- 熊曰
+- Abracadabra
+- Xiongyue
 - 兽音
 - 佛曰
 - The Cthulhu Mythos series
