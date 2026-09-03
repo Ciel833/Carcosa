@@ -1,0 +1,24 @@
+{
+  "name": "Carcosa",
+  "version": "1.0.0",
+  "description": "Encode boring text into unnameable eldritch chants.",
+  "type": "commonjs",
+  "main": "core/index.js",
+  "bin": {
+    "cthulhu": "./cli.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "cthulhu",
+    "lovecraft",
+    "cipher",
+    "encode",
+    "rlyehian"
+  ],
+  "license": "MIT"
+}
