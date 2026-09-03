@@ -29,21 +29,6 @@ decode: scan past the mode's delimiters + prose marks + whitespace and skip
         [optional] un-XOR ──► plaintext
 ```
 
-## How it works
-
-One pipeline, three vocabularies:
-
-```
-plaintext ──► UTF-8 bytes ──► [optional] password keystream XOR ──►
-            length header (W=5 base-N digits) ++ base-N digits of the value ──►
-            token lookup ──► mode formatter ──► ciphertext
-
-decode: strip the mode's delimiters + prose marks + «…» regions + whitespace ──►
-        prefix-free trie greedy match ──►
-        read the first W symbols → L ──► remainder → value ──► right-justify to exactly L bytes ──►
-        [optional] un-XOR ──► plaintext
-```
-
 Key design decisions:
 
 - **The length header lives in digit space, not inside the BigInt.** `bytesToBigInt` drops leading zero bytes, so the payload byte count `L` is carried as W=5 *fixed-width base-N digits prepended to the token stream*. On decode, the bytes are right-justified (zero-padded on the left) to exactly `L` bytes — exact round-trip even for leading-zero, all-zero, and binary payloads.
