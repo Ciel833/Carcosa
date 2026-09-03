@@ -17,3 +17,43 @@
  * password + same plaintext ⇒ same ciphertext) and is not hardened against
  * cryptanalysis. Documented in the README; do not use for real secrets.
  */
+(function () {
+  const g = (typeof globalThis !== 'undefined') ? globalThis : self;
+  const ns = g.CthulhuCore || (g.CthulhuCore = {});
+
+  const prng = {
+    /** FNV-1a 32-bit hash of a byte array. Every step ends in >>> 0. */
+    fnv1a32(bytes) {
+      let h = 0x811c9dc5;
+      for (let i = 0; i < bytes.length; i++) {
+        h ^= bytes[i];
+        h = Math.imul(h, 16777619) >>> 0;
+      }
+      return h >>> 0;
+    },
+
+    /**
+     * XOR bytes with the positional keystream derived from the password.
+     * An empty password is a no-op (returns the input unchanged).
+     * Deterministic across Node and browsers. Pure function of (bytes, pwd).
+     */
+    xorBytes(bytes, passwordBytes) {
+      if (passwordBytes.length === 0) return bytes;
+      const out = new Uint8Array(bytes.length);
+      const keyInput = new Uint8Array(passwordBytes.length + 4);
+      keyInput.set(passwordBytes, 0);
+      const hi = passwordBytes.length;
+      for (let i = 0; i < bytes.length; i++) {
+        keyInput[hi] = (i >>> 24) & 0xff;
+        keyInput[hi + 1] = (i >>> 16) & 0xff;
+        keyInput[hi + 2] = (i >>> 8) & 0xff;
+        keyInput[hi + 3] = i & 0xff;
+        out[i] = bytes[i] ^ (prng.fnv1a32(keyInput) & 0xff);
+      }
+      return out;
+    }
+  };
+
+  ns.prng = prng;
+  if (typeof module === 'object' && module.exports) module.exports = prng;
+})();
