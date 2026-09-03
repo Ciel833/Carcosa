@@ -23,11 +23,42 @@ plaintext ──► UTF-8 bytes ──► [optional] password keystream XOR ─�
             length header (W=5 base-N digits) ++ base-N digits of the value ──►
             token lookup ──► mode formatter ──► ciphertext
 
+decode: scan past the mode's delimiters + prose marks + whitespace and skip
+        complete «…» regions ──► prefix-free trie greedy match ──►
+        read the first W symbols → L ──► remainder → value ──► right-justify to exactly L bytes ──►
+        [optional] un-XOR ──► plaintext
+```
+
+## How it works
+
+One pipeline, three vocabularies:
+
+```
+plaintext ──► UTF-8 bytes ──► [optional] password keystream XOR ──►
+            length header (W=5 base-N digits) ++ base-N digits of the value ──►
+            token lookup ──► mode formatter ──► ciphertext
+
 decode: strip the mode's delimiters + prose marks + «…» regions + whitespace ──►
         prefix-free trie greedy match ──►
         read the first W symbols → L ──► remainder → value ──► right-justify to exactly L bytes ──►
         [optional] un-XOR ──► plaintext
 ```
+
+Key design decisions:
+
+- **The length header lives in digit space, not inside the BigInt.** `bytesToBigInt` drops leading zero bytes, so the payload byte count `L` is carried as W=5 *fixed-width base-N digits prepended to the token stream*. On decode, the bytes are right-justified (zero-padded on the left) to exactly `L` bytes — exact round-trip even for leading-zero, all-zero, and binary payloads.
+- **Prefix-free tables.** No token is a prefix of another within a mode, so formatting marks (apostrophes / spaces / `!` / `·`) are purely visual. During parsing those marks are **transparent to matching** — they may even appear *inside* a token (e.g. a line-wrap splitting `Yog-Sothoth`) without affecting the result. Copy-paste-mangled ciphertext still decodes.
+- **Elder Gods delimiter discipline.** `-` and `'` are legal token-internal characters (`Yog-Sothoth`, `Y'golonac`, `Gla'aki`), so that mode's delimiters must be `!` and `·` — characters no name contains — and parsing never strips `-` / `'`.
+- **Password keystream.** keystream byte *i* = `FNV1a32(password ∥ big-endian u32 i) & 0xff` — position-mixed, with `Math.imul` keeping Node and browsers bit-identical. Empty password = no obfuscation.
+- **Base 256 (Deep One) fast path.** Its digits *are* the bytes, so no BigInt conversion is involved (a 1 MB round-trip runs in ~0.3–3 s).
+
+## One language, three registers
+
+Are the three modes one language? **Yes — one pipeline, one grammar engine, three phonetic registers.** Every mode runs the identical byte pipeline; the only difference is the table that maps digits to phonemes. v2 added a shared grammar engine on top, so the registers now *also* render with the same sentence structure. They sound different the way a prayer, a street dialect and a scripture are different voices of one tongue.
+
+- **R'lyehian — the sacred chant register.** Lovecraft states in *The Call of Cthulhu* that R'lyehian uses a ternary numeral system. The 27-syllable table is built structurally as onset(3) × nucleus(3) × coda(3) — 27 = 3³ — from phonemes of the famous chant `Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn`. As *prose* its syllables compose chant-period words (`phanphanzy`, `mglothngogcq`) guarded by `«mglw»`, `«wgahn»`, `«fhtagn»`.
+- **Deep One — the guttural vernacular register.** From *The Shadow over Innsmouth* — heavy guttural onset clusters (kh/gh/sh/th/mh/ng/dh/wg) × unearthly vowel nuclei × closing nasals, generating 256 equal-length syllables (equal length ⇒ prefix-freeness for free). Its prose reads like amphibian street talk: `khaagkhaagqy`, `mhaenwguunngougjz`.
+- **Elder Gods — the scriptural register.** Its lexemes are 32 real divine names (Cthulhu, Yog-Sothoth, Azathoth, Nyarlathotep…). Because every name is already a complete word, its grammar uses **particles + punctuation only** (no word-forming affixes that would need unused letters): `«Iä» Cthulhu Cthulhu «Sothoth»; Cthulhu Yog-Sothoth. «fhtagn»`.
 
 ## Prose — a grammar engine over the same digits
 
@@ -61,3 +92,17 @@ Nguthmgluthnguthjs ngonphanzy «mglah»; mglagmglonzy phothphathjs. «fhtagn»
 - Single-input cap (W=5 header): R'lyehian `27⁵−1 ≈ 14.3 MB`; Elder Gods `32⁵−1 ≈ 33.5 MB`; Deep One `256⁵−1 ≈ 1.1 TB` (practically bounded by BigInt/memory). Oversized input throws.
 - Output expansion: Deep One ≈ 5 chars/byte, R'lyehian ≈ 8, Elder Gods ≈ 11.
 - Performance: a few kilobytes are instant; 1 MB Deep One ~0.3–3 s; the BigInt modes (R'lyehian / Elder Gods) get slower on large files — fine for a toy.
+
+## Development
+
+Zero dependencies; Node's built-in test runner:
+
+```bash
+npm test        # = node --test
+```
+
+Coverage: full round-trips for every mode × with/without password across Chinese, emoji (4-byte UTF-8), combining marks, RTL, NUL, leading-zero, all-`0xFF`, empty, and 27³-byte header-boundary payloads; vocab properties (table size, prefix-freeness, delimiter discipline); mangled-ciphertext robustness; keystream determinism; garbage rejection; a 1 MB perf smoke. Grammar layer: prose/verse cross-style equivalence, per-mode alphabet safety (affix letters + marks never collide with tokens), prose determinism, mangled-prose robustness, and default-prose/verse CLI style tests.
+
+## License
+
+MIT © 2026 Ciel
