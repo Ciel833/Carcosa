@@ -65,6 +65,12 @@
      * Throws if the value does not fit in W digits.
      */
     padDigits(value, baseRadix, W) {
+      const digits = base.bigIntToDigits(BigInt(value), baseRadix);
+      if (digits.length > W) {
+        throw new RangeError(`padDigits: value ${value} does not fit in ${W} digits (radix ${baseRadix})`);
+      }
+      while (digits.length < W) digits.unshift(0);
+      return digits;
     },
 
     /**
@@ -73,6 +79,13 @@
      * restored once the original byte count L is known.
      */
     rightJustifyBytes(bytes, L) {
+      if (bytes.length > L) {
+        throw new RangeError(`rightJustifyBytes: ${bytes.length} bytes exceeds target ${L}`);
+      }
+      if (bytes.length === L) return bytes;
+      const out = new Uint8Array(L);
+      out.set(bytes, L - bytes.length);
+      return out;
     },
 
     /** Largest value representable in W radix-`baseRadix` digits. */
