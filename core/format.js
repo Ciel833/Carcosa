@@ -44,7 +44,7 @@
     }
     return root;
   }
-
+   const isWhitespace = (ch) => /\s/u.test(ch);
   /**
    * Parse ciphertext back into digit indices.
    * Strip chars (delimiters + whitespace) are transparent: they may appear
@@ -52,6 +52,55 @@
    * and never affect the match. Throws on any other unknown character.
    */
   function tokenize(text, tokens, delimiters) {
+    const stripSet = new Set(delimiters);
+    let trie = trieCache.get(tokens);
+    if (!trie) {
+      trie = buildTrie(tokens);
+      trieCache.set(tokens, trie);
+    }
+    const lower = text.toLowerCase();
+    const digits = [];
+    let i = 0;
+    while (i < lower.length) {
+      const ch = lower[i];
+      // «…» regions are fully transparent: the tokenizer skips the whole
+      // region (particles such as «fhtagn» may use content letters). A stray
+      // unbalanced '«' or '»' is harmless (it is in the strip set below).
+      if (ch === '«') {
+        const close = lower.indexOf('»', i + 1);
+        i = close === -1 ? lower.length : close + 1;
+        continue;
+      }
+      if (isWhitespace(ch) || stripSet.has(ch)) { i++; continue; }
+      let node = trie;
+      let j = i;
+      let matched = -1;
+      while (j < lower.length) {
+        const c = lower[j];
+        // «…» regions are transparent to matching as well — otherwise the walk
+        // would stop on a particle's letter (e.g. the 'w' of «wgahn») and leave
+        // the outer loop on an unrecognized char.
+        if (c === '«') {
+          const close = lower.indexOf('»', j + 1);
+          j = close === -1 ? lower.length : close + 1;
+          continue;
+        }
+        if (isWhitespace(c) || stripSet.has(c)) { j++; continue; } // strippable chars are transparent to matching
+        const next = node.children.get(c);
+        if (!next) break;
+        node = next;
+        j++;
+        if (node.index !== -1) matched = node.index;
+      }
+      if (matched === -1) {
+        const bad = lower[i];
+        const snippet = lower.slice(Math.max(0, i - 10), i + 10);
+        throw new Error(`unrecognized symbol '${bad}' near position ${i} ("${snippet}")`);
+      }
+      digits.push(matched);
+      i = j;
+    }
+    return digits;
   }
 
   /** Map digit indices to their canonical token spellings. */
