@@ -20,7 +20,6 @@
  * Tolerated mangling (tested): extra spaces, newlines, wrapped lines,
  * title-casing, «…» particles, punctuation, and any inserted delimiter chars.
  */
-
 (function () {
   const g = (typeof globalThis !== 'undefined') ? globalThis : self;
   const ns = g.CthulhuCore || (g.CthulhuCore = {});
@@ -44,7 +43,9 @@
     }
     return root;
   }
-   const isWhitespace = (ch) => /\s/u.test(ch);
+
+  const isWhitespace = (ch) => /\s/u.test(ch);
+
   /**
    * Parse ciphertext back into digit indices.
    * Strip chars (delimiters + whitespace) are transparent: they may appear
@@ -105,17 +106,42 @@
 
   /** Map digit indices to their canonical token spellings. */
   function digitsToTokens(digits, tokens) {
+    return digits.map((d) => {
+      if (d < 0 || d >= tokens.length) {
+        throw new RangeError(`digit ${d} out of range for a ${tokens.length}-token table`);
+      }
+      return tokens[d];
+    });
   }
 
   const WORD_PATTERN = [3, 2, 3, 4, 2, 3];
 
   /** R'lyehian: syllables joined into pseudo-words with apostrophes. */
   function formatRlyehian(digits, tokens) {
+    const syllables = digitsToTokens(digits, tokens);
+    const words = [];
+    let i = 0;
+    let wi = 0;
+    while (i < syllables.length) {
+      const len = WORD_PATTERN[wi % WORD_PATTERN.length];
+      const word = syllables.slice(i, i + len).join("'");
+      words.push(word);
+      i += len;
+      wi++;
+    }
+    return words.join(' ');
   }
 
   /** Deep One: syllables paired into capitalized phonetic bursts. */
   function formatDeepOne(digits, tokens) {
-
+    const syllables = digitsToTokens(digits, tokens);
+    const bursts = [];
+    for (let i = 0; i < syllables.length; i += 2) {
+      let s = syllables[i];
+      if (i + 1 < syllables.length) s += syllables[i + 1];
+      bursts.push(s.charAt(0).toUpperCase() + s.slice(1));
+    }
+    return bursts.join(' ');
   }
 
   /**
@@ -123,6 +149,17 @@
    * separated by ' · ' instead, ending with a definitive '!'.
    */
   function formatGods(digits, tokens) {
+    const names = digitsToTokens(digits, tokens);
+    const parts = [];
+    for (let i = 0; i < names.length; i++) {
+      parts.push(names[i]);
+      if (i % 5 === 4) {
+        parts.push(' · ');
+      } else {
+        parts.push(i + 1 < names.length ? '! ' : '!');
+      }
+    }
+    return parts.join('');
   }
 
   /*
@@ -144,6 +181,78 @@
    * sentence often ends with a final mark + «…» invocation.
    */
   function formatProse(digits, tokens, prose) {
+    const affixOf = (role) => (prose.affix && prose.affix[role]) || '';
+    const pick = (arr, seed) => arr[seed % arr.length];
+    const capFirst = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+    const has = (arr) => Array.isArray(arr) && arr.length > 0;
+
+    const GLUE = [',', ';', '—'];
+    const FINAL = ['.', '!', '?'];
+    const ROLE_CYCLE = ['noun', 'verb', 'noun', 'adj', 'verb', 'noun'];
+    const WORDS_PER_CLAUSE = 2;
+    const CLAUSES_PER_SENTENCE = 2;
+
+    // 1) syllables → pseudo-words with POS affixes.
+    const words = [];
+    let i = 0;
+    while (i < digits.length) {
+      // Syllable modes group 2-3 syllables into a word; the name-based Elder
+      // Gods register keeps one name per word (fully distinct lexemes).
+      const seed = digits[i];
+      const size = prose.affix ? 2 + (seed % 2) : 1;
+      const syls = digitsToTokens(digits.slice(i, i + size), tokens);
+      i += size;
+      const role = ROLE_CYCLE[words.length % ROLE_CYCLE.length];
+      const text = prose.affix
+        ? (syls.join('') + affixOf(role)).toLowerCase()
+        : syls.join('');
+      words.push({ text, seed: seed + words.length });
+    }
+
+    // 2) words → clauses → sentences (fixed rhythm).
+    const clauses = [];
+    for (let w = 0; w < words.length; w += WORDS_PER_CLAUSE) {
+      clauses.push(words.slice(w, w + WORDS_PER_CLAUSE));
+    }
+    const sentences = [];
+    for (let c = 0; c < clauses.length; c += CLAUSES_PER_SENTENCE) {
+      sentences.push(clauses.slice(c, c + CLAUSES_PER_SENTENCE));
+    }
+
+    // 3) sentence rendering. Commas/semicolons attach to the preceding word
+    //    (no space before); particles and em dashes keep their spaces.
+    const NO_SPACE_BEFORE = new Set([',', ';', '.', '!', '?']);
+    const out = [];
+    for (const sentence of sentences) {
+      const seed = sentence[0][0].seed;
+      let str = (seed % 4 === 0 && has(prose.opener))
+        ? '«' + pick(prose.opener, seed >>> 1) + '»'
+        : '';
+      let firstWord = true;
+      sentence.forEach((clause, ci) => {
+        clause.forEach((word, wj) => {
+          if (str) str += ' ';
+          if (firstWord) { str += capFirst(word.text); firstWord = false; }
+          else str += word.text;
+          if (wj === clause.length - 1) {
+            if (ci < sentence.length - 1) {
+              if ((seed + ci + wj) % 3 === 1 && has(prose.joiner)) {
+                str += ' «' + pick(prose.joiner, seed + ci + wj) + '»';
+              }
+              str += GLUE[(seed + ci + wj) % GLUE.length];
+            }
+            if (ci === sentence.length - 1) {
+              str += FINAL[seed % FINAL.length];
+            }
+          }
+        });
+      });
+      if (seed % 2 === 0 && has(prose.closer)) {
+        str += ' «' + pick(prose.closer, seed >>> 2) + '»';
+      }
+      out.push(str);
+    }
+    return out.join('\n\n');
   }
 
   const format = {
