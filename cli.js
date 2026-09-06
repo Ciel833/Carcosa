@@ -28,6 +28,7 @@ Options:
   -s, --style <str>     prose | verse               (default: prose)
                         prose = full pseudo-language article
                         verse = original chant-style output
+  -P, --no-particles    omit «…» particles from prose output (default: on)
   -p, --password <str>  keystream obfuscation password (default: none)
   -f, --file <path>     read input from a file (default: stdin)
   -h, --help            show this help
@@ -39,7 +40,7 @@ Examples:
 `;
 
 function parseArgs(argv) {
-  const opts = { action: null, mode: 'rlyehian', style: 'prose', password: '', file: null, help: false, error: false };
+  const opts = { action: null, mode: 'rlyehian', style: 'prose', particles: true, password: '', file: null, help: false, error: false };
   const positional = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -50,6 +51,8 @@ function parseArgs(argv) {
       case '--mode': opts.mode = argv[++i]; break;
       case '-s':
       case '--style': opts.style = argv[++i]; break;
+      case '-P':
+      case '--no-particles': opts.particles = false; break;
       case '-p':
       case '--password': opts.password = argv[++i]; break;
       case '-f':
@@ -102,7 +105,7 @@ function main() {
     return;
   }
 
-  const cipherOpts = { mode: opts.mode, style: opts.style, password: opts.password };
+  const cipherOpts = { mode: opts.mode, style: opts.style, particles: opts.particles, password: opts.password };
   try {
     if (opts.action === 'encode') {
       process.stdout.write(encodeBytes(input, cipherOpts) + '\n');
