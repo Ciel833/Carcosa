@@ -14,9 +14,9 @@ A **reversible** Cthulhu-Mythos cipher toy: any UTF-8 input (English, emoji, bin
 
 | Mode | Register | Table | Prose look |
 |---|---|---|---|
-| **R'lyehian** | sacred chant | 27 syllables | `«mglw» Phanphanzy phanphagjs «wgahn»; ngogmglanzy mglothngogcq. «fhtagn»` |
-| **Deep One** | guttural vernacular | 256 syllables | `«khth» Khaagkhaagqy khaagkhaagjz «ghuun»; kheanshuundheenqy thiinghaagthoegbf. «nghth»` |
-| **Elder Gods** | scriptural litany | 32 names | `«Iä» Cthulhu Cthulhu «Sothoth»; Cthulhu Yog-Sothoth. «fhtagn»` |
+| **R'lyehian** | sacred chant | 27 syllables | `«mglw» Phan'phanzy phan'phanjs «wgahn»; ngog'mglag'ngonzy ngug'ngathcq. «fhtagn»` |
+| **Deep One** | guttural vernacular | 256 syllables | `«khth» Khaag'khaagqy khaag'khaagjz «ghuun»; khean'shoeg'thuugqy thiin'ghaag'shounbf. «nghth»` |
+| **Elder Gods** | scriptural litany | 32 names | `«Iä» Cthulhu Cthulhu «Sothoth»; Cthulhu Cthulhu. «fhtagn»` |
 
 ## How it works
 
@@ -45,15 +45,15 @@ Key design decisions:
 
 Are the three modes one language? **Yes — one pipeline, one grammar engine, three phonetic registers.** Every mode runs the identical byte pipeline; the only difference is the table that maps digits to phonemes. v2 added a shared grammar engine on top, so the registers now *also* render with the same sentence structure. They sound different the way a prayer, a street dialect and a scripture are different voices of one tongue.
 
-- **R'lyehian — the sacred chant register.** Lovecraft states in *The Call of Cthulhu* that R'lyehian uses a ternary numeral system. The 27-syllable table is built structurally as onset(3) × nucleus(3) × coda(3) — 27 = 3³ — from phonemes of the famous chant `Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn`. As *prose* its syllables compose chant-period words (`phanphanzy`, `mglothngogcq`) guarded by `«mglw»`, `«wgahn»`, `«fhtagn»`.
-- **Deep One — the guttural vernacular register.** From *The Shadow over Innsmouth* — heavy guttural onset clusters (kh/gh/sh/th/mh/ng/dh/wg) × unearthly vowel nuclei × closing nasals, generating 256 equal-length syllables (equal length ⇒ prefix-freeness for free). Its prose reads like amphibian street talk: `khaagkhaagqy`, `mhaenwguunngougjz`.
+- **R'lyehian — the sacred chant register.** Lovecraft states in *The Call of Cthulhu* that R'lyehian uses a ternary numeral system. The 27-syllable table is built structurally as onset(3) × nucleus(3) × coda(3) — 27 = 3³ — from phonemes of the famous chant `Ph'nglui mglw'nafh Cthulhu R'lyeh wgah'nagl fhtagn`. As *prose* its syllables compose chant-period words, apostrophe-joined like the chant itself (`phan'phanzy`, `mgloth'ngogcq`), guarded by `«mglw»`, `«wgahn»`, `«fhtagn»`.
+- **Deep One — the guttural vernacular register.** From *The Shadow over Innsmouth* — heavy guttural onset clusters (kh/gh/sh/th/mh/ng/dh/wg) × unearthly vowel nuclei × closing nasals, generating 256 equal-length syllables (equal length ⇒ prefix-freeness for free). Its prose reads like amphibian street talk — burst-pairs joined with the register's own apostrophe habit (the sunken city `Y'ha-nthlei`): `khaag'khaagqy`, `mhaen'wguun'ngougjz`.
 - **Elder Gods — the scriptural register.** Its lexemes are 32 real divine names (Cthulhu, Yog-Sothoth, Azathoth, Nyarlathotep…). Because every name is already a complete word, its grammar uses **particles + punctuation only** (no word-forming affixes that would need unused letters): `«Iä» Cthulhu Cthulhu «Sothoth»; Cthulhu Yog-Sothoth. «fhtagn»`.
 
 ## Prose — a grammar engine over the same digits
 
 The v1 output was one *format* — monotonous, as you noticed. v2 adds a generative grammar layer, deterministic and **completely strippable**, so it costs nothing on decode:
 
-1. **Word shaping.** Content syllables concatenate into pseudo-words of 2–3 syllables (Elder Gods: one divine name per word). No hand-curated vocabulary — every possible digit stream yields words, so the language is *productive*, not a fixed dictionary.
+1. **Word shaping.** Content syllables concatenate into pseudo-words of 2–3 syllables, joined with the conjunction apostrophe the canon chant uses — `phan'phanzy`, like `Ph'nglui` / `wgah'nagl`. Elder Gods is the exception: one divine name per word, and `'` is token-internal there (`Y'golonac`), so no apostrophes are added. No hand-curated vocabulary — every possible digit stream yields words, so the language is *productive*, not a fixed dictionary.
 2. **Parts of speech.** Each word gets a role from a repeating clause pattern — `noun → verb → noun → adjective → verb → noun …` — marked by a register-specific affix suffix: R'lyehian `-zy/-js/-cq`, Deep One `-qy/-jz/-bf`. This answers “名词/形容词/动词”: affixes `zy`/`cq` and `qy`/`bf` are noun/adjective, `js`/`jz` are verb markers.
 3. **Particles.** Function-word phonemes rendered in `«…»` — `«mglw»` / `«khth»` / `«Iä»` open a sentence, `«wgahn»` / `«ghuun»` / `«Sothoth»` join clauses, `«fhtagn»` / `«nghth»` / `«cthulhu»` close it. The brackets mark a **transparent region**: the tokenizer skips the whole `«…»` span, so particles may freely reuse chant letters (`fhtagn`) that also appear in content tokens. Particles can be switched off entirely — `particles: false` (JS API), `-P/--no-particles` (CLI), or the UI toggle — leaving identical word shapes, affixes, clause rhythm and punctuation, just without the `«…»` spans.
 4. **Punctuation.** Clauses join with `,` `;` `—`; sentences end in `.` `!` `?`. Selection of openers/joiners/closers and final marks is **seeded by the digit values themselves**, so identical input produces the identical article (deterministic), yet different inputs read differently (organic).
@@ -63,9 +63,9 @@ The v1 output was one *format* — monotonous, as you noticed. v2 adds a generat
 Example article (R'lyehian, prose, no password):
 
 ```
-«mglw» Phanphanzy phanphagjs «wgahn»; phunphugmglunzy ngathphagcq. «fhtagn»
+«mglw» Phan'phanzy phan'phanjs «wgahn»; phog'phun'mglathzy phuth'nguth'ngagcq. «fhtagn»
 
-Nguthmgluthnguthjs ngonphanzy «mglah»; mglagmglonzy phothphathjs. «fhtagn»
+Ngug'mglagjs phug'phagzy, phog'ngoth'mglagzy? «fhtagn»
 ```
 
 ## Security disclaimer

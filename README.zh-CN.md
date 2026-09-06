@@ -15,9 +15,9 @@
 
 | 模式 | 风格 | 词表 | 散文示例 |
 |---|---|---|---|
-| **R'lyehian** | 神圣咏唱 | 27 个音节 | `«mglw» Phanphanzy phanphagjs «wgahn»; ngogmglanzy mglothngogcq. «fhtagn»` |
-| **Deep One** | 粗砺口语 | 256 个音节 | `«khth» Khaagkhaagqy khaagkhaagjz «ghuun»; kheanshuundheenqy thiinghaagthoegbf. «nghth»` |
-| **Elder Gods** | 经文式祷文 | 32 个名称 | `«Iä» Cthulhu Cthulhu «Sothoth»; Cthulhu Yog-Sothoth. «fhtagn»` |
+| **R'lyehian** | 神圣咏唱 | 27 个音节 | `«mglw» Phan'phanzy phan'phanjs «wgahn»; ngog'mglag'ngonzy ngug'ngathcq. «fhtagn»` |
+| **Deep One** | 粗砺口语 | 256 个音节 | `«khth» Khaag'khaagqy khaag'khaagjz «ghuun»; khean'shoeg'thuugqy thiin'ghaag'shounbf. «nghth»` |
+| **Elder Gods** | 经文式祷文 | 32 个名称 | `«Iä» Cthulhu Cthulhu «Sothoth»; Cthulhu Cthulhu. «fhtagn»` |
 
 ## 工作原理
 
@@ -51,7 +51,7 @@
 
 散文模式是在同一组数字上的可逆、可完全剥离的视觉包装，不会改变解码逻辑：
 
-1. 每 2–3 个音节组成一个伪词；Elder Gods 每个神名就是一个词。
+1. 每 2–3 个音节组成一个伪词，用咒语原型的连字符撇号黏合——`phan'phanzy`，如同 `Ph'nglui`、`wgah'nagl`；Elder Gods 每个神名就是一个词（撇号在神名内部出现，如 `Y'golonac`，故该模式不添加撇号）。
 2. 词语按 `noun → verb → noun → adjective → verb → noun …` 的循环获得词性，并添加模式专用后缀。
 3. 修饰词使用 `«…»` 包裹。当前密度较低：句首约 25%，句间约 1/3，句尾约 50%；句末标点始终出现。修饰词也可以通过 `particles: false`（JS API）、`-P/--no-particles`（CLI）或页面上的开关按钮整体关闭——关闭后词形、后缀、从句节奏与标点完全不变，只是不再插入 `«…»` 片段。
 4. 句子和标点由数字值确定性选择，因此相同输入始终生成相同文章。
