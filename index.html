@@ -221,6 +221,7 @@
   </div>
   <div class="particle-row" id="particle-row">
     <button class="st active" id="btn-particles" type="button">Atmosphere words <small>«…» particles in prose · ON</small></button>
+    <button class="st active" id="btn-conjunction" type="button">Conjunction ' <small>chant-style apostrophes · ON</small></button>
   </div>
   <p class="lore" id="lore"></p>
 
@@ -258,13 +259,13 @@
 </footer>
 </div>
 
-<script src="core/base.js?v=3"></script>
-<script src="core/prng.js?v=3"></script>
-<script src="core/vocab/rlyehian.js?v=3"></script>
-<script src="core/vocab/deepone.js?v=3"></script>
-<script src="core/vocab/gods.js?v=3"></script>
-<script src="core/format.js?v=3"></script>
-<script src="core/index.js?v=3"></script>
+<script src="core/base.js?v=4"></script>
+<script src="core/prng.js?v=4"></script>
+<script src="core/vocab/rlyehian.js?v=4"></script>
+<script src="core/vocab/deepone.js?v=4"></script>
+<script src="core/vocab/gods.js?v=4"></script>
+<script src="core/format.js?v=4"></script>
+<script src="core/index.js?v=4"></script>
 <script>
 (function () {
   'use strict';
@@ -293,6 +294,7 @@
   let mode = 'rlyehian';
   let style = 'prose';
   let particles = true;
+  let conjunction = true;
 
   function currentMode() {
     const active = document.querySelector('.tab.active');
@@ -323,6 +325,12 @@
     $('btn-particles').lastElementChild.textContent = `«…» particles in prose · ${on ? 'ON' : 'OFF'}`;
   }
 
+  function setConjunction(on) {
+    conjunction = on;
+    $('btn-conjunction').classList.toggle('active', on);
+    $('btn-conjunction').lastElementChild.textContent = `chant-style apostrophes · ${on ? 'ON' : 'OFF'}`;
+  }
+
   function setStatus(msg, isError) {
     const el = $('status');
     el.textContent = msg;
@@ -337,7 +345,7 @@
     if (input.length === 0) { setStatus('Please enter some text.', true); return; }
     try {
       if (action === 'encode') {
-        $('output').value = CthulhuCipher.encodeText(input, { mode: m, style, particles, password });
+        $('output').value = CthulhuCipher.encodeText(input, { mode: m, style, particles, conjunction, password });
         setStatus(`Encrypted into ${METADATA[m].label} (${style}).`);
       } else {
         $('output').value = CthulhuCipher.decodeText(input, { mode: m, password });
@@ -373,6 +381,7 @@
     if (btn) setStyle(btn.dataset.style);
   });
   $('btn-particles').addEventListener('click', () => setParticles(!particles));
+  $('btn-conjunction').addEventListener('click', () => setConjunction(!conjunction));
   $('btn-encode').addEventListener('click', () => run('encode'));
   $('btn-decode').addEventListener('click', () => run('decode'));
   $('btn-copy').addEventListener('click', copyOutput);
