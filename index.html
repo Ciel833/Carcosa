@@ -107,6 +107,9 @@
     box-shadow: 0 0 14px rgba(154, 123, 216, 0.35);
   }
   .st.active small { color: #2b1660; }
+  .particle-row { display: flex; gap: 8px; margin-top: 14px; }
+  .particle-row .st { flex: 0 1 auto; }
+  .st:disabled { opacity: 0.4; cursor: not-allowed; }
   .lore {
     min-height: 40px;
     margin: 14px 2px 18px;
@@ -216,6 +219,9 @@
     <button class="st active" data-style="prose">Prose <small>full pseudo-language article</small></button>
     <button class="st" data-style="verse">Verse <small>original chant-style output</small></button>
   </div>
+  <div class="particle-row" id="particle-row">
+    <button class="st active" id="btn-particles" type="button">Atmosphere words <small>«…» particles in prose · ON</small></button>
+  </div>
   <p class="lore" id="lore"></p>
 
   <div class="field">
@@ -252,13 +258,13 @@
 </footer>
 </div>
 
-<script src="core/base.js?v=2"></script>
-<script src="core/prng.js?v=2"></script>
-<script src="core/vocab/rlyehian.js?v=2"></script>
-<script src="core/vocab/deepone.js?v=2"></script>
-<script src="core/vocab/gods.js?v=2"></script>
-<script src="core/format.js?v=2"></script>
-<script src="core/index.js?v=2"></script>
+<script src="core/base.js?v=3"></script>
+<script src="core/prng.js?v=3"></script>
+<script src="core/vocab/rlyehian.js?v=3"></script>
+<script src="core/vocab/deepone.js?v=3"></script>
+<script src="core/vocab/gods.js?v=3"></script>
+<script src="core/format.js?v=3"></script>
+<script src="core/index.js?v=3"></script>
 <script>
 (function () {
   'use strict';
@@ -286,6 +292,7 @@
 
   let mode = 'rlyehian';
   let style = 'prose';
+  let particles = true;
 
   function currentMode() {
     const active = document.querySelector('.tab.active');
@@ -303,9 +310,17 @@
 
   function setStyle(s) {
     style = s;
-    document.querySelectorAll('.st').forEach((b) => {
+    document.querySelectorAll('#style-toggle .st').forEach((b) => {
       b.classList.toggle('active', b.dataset.style === s);
     });
+    // Particles only exist in prose; disable (don't reset) the toggle in verse.
+    $('btn-particles').disabled = (s === 'verse');
+  }
+
+  function setParticles(on) {
+    particles = on;
+    $('btn-particles').classList.toggle('active', on);
+    $('btn-particles').lastElementChild.textContent = `«…» particles in prose · ${on ? 'ON' : 'OFF'}`;
   }
 
   function setStatus(msg, isError) {
@@ -322,7 +337,7 @@
     if (input.length === 0) { setStatus('Please enter some text.', true); return; }
     try {
       if (action === 'encode') {
-        $('output').value = CthulhuCipher.encodeText(input, { mode: m, style, password });
+        $('output').value = CthulhuCipher.encodeText(input, { mode: m, style, particles, password });
         setStatus(`Encrypted into ${METADATA[m].label} (${style}).`);
       } else {
         $('output').value = CthulhuCipher.decodeText(input, { mode: m, password });
@@ -357,6 +372,7 @@
     const btn = e.target.closest('.st');
     if (btn) setStyle(btn.dataset.style);
   });
+  $('btn-particles').addEventListener('click', () => setParticles(!particles));
   $('btn-encode').addEventListener('click', () => run('encode'));
   $('btn-decode').addEventListener('click', () => run('decode'));
   $('btn-copy').addEventListener('click', copyOutput);
