@@ -15,7 +15,9 @@
  * transparent (prose particles like «fhtagn» live there) and strips a mode's
  * prose grammar marks (part-of-speech affix letters, punctuation) — so prose
  * ciphertexts tokenize back to the same digit stream without any decode logic
- * knowing about grammar.
+ * knowing about grammar. The same transparency means the prose formatter may
+ * skip «…» particles entirely (a `particles: false` flag) with zero impact on
+ * reversibility.
  *
  * Tolerated mangling (tested): extra spaces, newlines, wrapped lines,
  * title-casing, «…» particles, punctuation, and any inserted delimiter chars.
@@ -179,8 +181,12 @@
    * seeded-sparse (they occur but don't saturate every slot): a sentence may
    * open with a particle, clauses may join with a particle + mark, and a
    * sentence often ends with a final mark + «…» invocation.
+   *
+   * `particles` (default on) gates only those «…» spans: with `particles: false`
+   * the article keeps identical word shapes, affixes, clause rhythm, glue and
+   * final marks — every seeded decision except particle insertion is unchanged.
    */
-  function formatProse(digits, tokens, prose) {
+  function formatProse(digits, tokens, prose, particles) {
     const affixOf = (role) => (prose.affix && prose.affix[role]) || '';
     const pick = (arr, seed) => arr[seed % arr.length];
     const capFirst = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -225,7 +231,7 @@
     const out = [];
     for (const sentence of sentences) {
       const seed = sentence[0][0].seed;
-      let str = (seed % 4 === 0 && has(prose.opener))
+      let str = (particles !== false && seed % 4 === 0 && has(prose.opener))
         ? '«' + pick(prose.opener, seed >>> 1) + '»'
         : '';
       let firstWord = true;
@@ -236,7 +242,7 @@
           else str += word.text;
           if (wj === clause.length - 1) {
             if (ci < sentence.length - 1) {
-              if ((seed + ci + wj) % 3 === 1 && has(prose.joiner)) {
+              if (particles !== false && (seed + ci + wj) % 3 === 1 && has(prose.joiner)) {
                 str += ' «' + pick(prose.joiner, seed + ci + wj) + '»';
               }
               str += GLUE[(seed + ci + wj) % GLUE.length];
@@ -247,7 +253,7 @@
           }
         });
       });
-      if (seed % 2 === 0 && has(prose.closer)) {
+      if (particles !== false && seed % 2 === 0 && has(prose.closer)) {
         str += ' «' + pick(prose.closer, seed >>> 2) + '»';
       }
       out.push(str);
