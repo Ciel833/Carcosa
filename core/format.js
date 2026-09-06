@@ -134,13 +134,16 @@
     return words.join(' ');
   }
 
-  /** Deep One: syllables paired into capitalized phonetic bursts. */
+  /**
+   * Deep One: syllables paired into capitalized phonetic bursts. The pair is
+   * joined with an apostrophe — the register's conjuction habit (the sunken
+   * city Y'ha-nthlei) — making each burst read like a deep-one name.
+   */
   function formatDeepOne(digits, tokens) {
     const syllables = digitsToTokens(digits, tokens);
     const bursts = [];
     for (let i = 0; i < syllables.length; i += 2) {
-      let s = syllables[i];
-      if (i + 1 < syllables.length) s += syllables[i + 1];
+      const s = syllables[i] + (i + 1 < syllables.length ? "'" + syllables[i + 1] : '');
       bursts.push(s.charAt(0).toUpperCase() + s.slice(1));
     }
     return bursts.join(' ');
@@ -198,6 +201,12 @@
     const WORDS_PER_CLAUSE = 2;
     const CLAUSES_PER_SENTENCE = 2;
 
+    // The conjunction mark: syllables of one word join with an apostrophe
+    // ('phan'phanzy'), mirroring the canon chant (Ph'nglui mglw'nafh …). This
+    // is only allowed when no token contains an apostrophe — the mark must be
+    // invisible to the trie, which excludes Elder Gods names like Y'golonac.
+    const join = tokens.some((t) => t.includes("'")) ? '' : "'";
+
     // 1) syllables → pseudo-words with POS affixes.
     const words = [];
     let i = 0;
@@ -210,8 +219,8 @@
       i += size;
       const role = ROLE_CYCLE[words.length % ROLE_CYCLE.length];
       const text = prose.affix
-        ? (syls.join('') + affixOf(role)).toLowerCase()
-        : syls.join('');
+        ? (syls.join(join) + affixOf(role)).toLowerCase()
+        : syls.join(join);
       words.push({ text, seed: seed + words.length });
     }
 
