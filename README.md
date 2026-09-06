@@ -55,7 +55,7 @@ The v1 output was one *format* — monotonous, as you noticed. v2 adds a generat
 
 1. **Word shaping.** Content syllables concatenate into pseudo-words of 2–3 syllables (Elder Gods: one divine name per word). No hand-curated vocabulary — every possible digit stream yields words, so the language is *productive*, not a fixed dictionary.
 2. **Parts of speech.** Each word gets a role from a repeating clause pattern — `noun → verb → noun → adjective → verb → noun …` — marked by a register-specific affix suffix: R'lyehian `-zy/-js/-cq`, Deep One `-qy/-jz/-bf`. This answers “名词/形容词/动词”: affixes `zy`/`cq` and `qy`/`bf` are noun/adjective, `js`/`jz` are verb markers.
-3. **Particles.** Function-word phonemes rendered in `«…»` — `«mglw»` / `«khth»` / `«Iä»` open a sentence, `«wgahn»` / `«ghuun»` / `«Sothoth»` join clauses, `«fhtagn»` / `«nghth»` / `«cthulhu»` close it. The brackets mark a **transparent region**: the tokenizer skips the whole `«…»` span, so particles may freely reuse chant letters (`fhtagn`) that also appear in content tokens.
+3. **Particles.** Function-word phonemes rendered in `«…»` — `«mglw»` / `«khth»` / `«Iä»` open a sentence, `«wgahn»` / `«ghuun»` / `«Sothoth»` join clauses, `«fhtagn»` / `«nghth»` / `«cthulhu»` close it. The brackets mark a **transparent region**: the tokenizer skips the whole `«…»` span, so particles may freely reuse chant letters (`fhtagn`) that also appear in content tokens. Particles can be switched off entirely — `particles: false` (JS API), `-P/--no-particles` (CLI), or the UI toggle — leaving identical word shapes, affixes, clause rhythm and punctuation, just without the `«…»` spans.
 4. **Punctuation.** Clauses join with `,` `;` `—`; sentences end in `.` `!` `?`. Selection of openers/joiners/closers and final marks is **seeded by the digit values themselves**, so identical input produces the identical article (deterministic), yet different inputs read differently (organic).
 
 **Why this keeps the cipher reversible:** the grammar layer is pure visualization over the same digit stream the verse style uses. Decode never parses grammar — it strips the affix letters and marks as transparent characters and skips `«…»` regions, then greedy-matches tokens exactly as before. None of the decode math changes; old verse ciphertexts decode through the same code path.
@@ -96,7 +96,7 @@ Coverage: full round-trips for every mode × with/without password across Chines
 
 Future releases are planned to add:
 
-- Modifier density controls
+- Finer modifier-density controls (an on/off particle toggle is now available)
 - Sentence-randomness controls
 - Rotor encryption
 
