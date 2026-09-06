@@ -119,14 +119,15 @@
   const WORD_PATTERN = [3, 2, 3, 4, 2, 3];
 
   /** R'lyehian: syllables joined into pseudo-words with apostrophes. */
-  function formatRlyehian(digits, tokens) {
+  function formatRlyehian(digits, tokens, conjunction) {
     const syllables = digitsToTokens(digits, tokens);
+    const join = conjunction === false ? '' : "'";
     const words = [];
     let i = 0;
     let wi = 0;
     while (i < syllables.length) {
       const len = WORD_PATTERN[wi % WORD_PATTERN.length];
-      const word = syllables.slice(i, i + len).join("'");
+      const word = syllables.slice(i, i + len).join(join);
       words.push(word);
       i += len;
       wi++;
@@ -139,11 +140,12 @@
    * joined with an apostrophe — the register's conjuction habit (the sunken
    * city Y'ha-nthlei) — making each burst read like a deep-one name.
    */
-  function formatDeepOne(digits, tokens) {
+  function formatDeepOne(digits, tokens, conjunction) {
     const syllables = digitsToTokens(digits, tokens);
+    const join = conjunction === false ? '' : "'";
     const bursts = [];
     for (let i = 0; i < syllables.length; i += 2) {
-      const s = syllables[i] + (i + 1 < syllables.length ? "'" + syllables[i + 1] : '');
+      const s = syllables[i] + (i + 1 < syllables.length ? join + syllables[i + 1] : '');
       bursts.push(s.charAt(0).toUpperCase() + s.slice(1));
     }
     return bursts.join(' ');
@@ -188,8 +190,10 @@
    * `particles` (default on) gates only those «…» spans: with `particles: false`
    * the article keeps identical word shapes, affixes, clause rhythm, glue and
    * final marks — every seeded decision except particle insertion is unchanged.
+   * `conjunction` (default on) gates only the apostrophe that joins a word's
+   * syllables: `conjunction: false` concatenates them instead ('phanphanzy').
    */
-  function formatProse(digits, tokens, prose, particles) {
+  function formatProse(digits, tokens, prose, particles, conjunction) {
     const affixOf = (role) => (prose.affix && prose.affix[role]) || '';
     const pick = (arr, seed) => arr[seed % arr.length];
     const capFirst = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -205,7 +209,9 @@
     // ('phan'phanzy'), mirroring the canon chant (Ph'nglui mglw'nafh …). This
     // is only allowed when no token contains an apostrophe — the mark must be
     // invisible to the trie, which excludes Elder Gods names like Y'golonac.
-    const join = tokens.some((t) => t.includes("'")) ? '' : "'";
+    // `conjunction: false` (default on) returns to plain concatenation
+    // ('phanphanzy') — same guarantee as `particles`, zero decode impact.
+    const join = (conjunction === false || tokens.some((t) => t.includes("'"))) ? '' : "'";
 
     // 1) syllables → pseudo-words with POS affixes.
     const words = [];

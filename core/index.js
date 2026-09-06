@@ -17,7 +17,7 @@
  * no BigInt conversion is needed.
  *
  * API (works in Node via require, in browsers as the global `CthulhuCipher`):
- *   encodeBytes(bytes, {mode, style, particles, password})  → ciphertext string
+ *   encodeBytes(bytes, {mode, style, particles, conjunction, password})  → ciphertext string
  *   decode(text, {mode, password})        → Uint8Array
  *   encodeText(text, opts) / decodeText(text, opts)  → string conveniences
  */
@@ -129,8 +129,8 @@
     }
     const digits = header.concat(body);
     return style === 'verse'
-      ? cfg.formatter(digits, cfg.tokens)
-      : format.formatProse(digits, cfg.tokens, cfg.prose, opts.particles);
+      ? cfg.formatter(digits, cfg.tokens, opts.conjunction)
+      : format.formatProse(digits, cfg.tokens, cfg.prose, opts.particles, opts.conjunction);
   }
 
   /** Ciphertext string → Uint8Array. Throws on garbage the tokenizer can't read. */
