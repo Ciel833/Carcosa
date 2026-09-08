@@ -24,7 +24,7 @@ Commands:
   decode    restore ciphertext back to bytes
 
 Options:
-  -m, --mode <name>     rlyehian | deepone | gods   (default: rlyehian)
+  -m, --mode <name>     rlyehian | gods             (default: rlyehian)
   -s, --style <str>     prose | verse               (default: prose)
                         prose = full pseudo-language article
                         verse = original chant-style output
