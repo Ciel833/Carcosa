@@ -206,13 +206,12 @@
 <div class="page">
 <header>
   <h1>Carcosa</h1>
-  <p class="subtitle"><span class="cn">Encode boring text into unnameable eldritch chants.</span><br>R&#39;lyehian · Deep One · Elder Gods</p>
+  <p class="subtitle"><span class="cn">Encode boring text into unnameable eldritch chants.</span><br>R&#39;lyehian · Elder Gods</p>
 </header>
 
 <main class="panel">
   <div class="tabs" id="tabs">
-    <button class="tab active" data-mode="rlyehian">R&#39;lyehian<small>TERNARY · 27 SYLLABLES</small></button>
-    <button class="tab" data-mode="deepone">Deep One<small>256 SYLLABLES</small></button>
+    <button class="tab active" data-mode="rlyehian">R&#39;lyehian<small>BASE 256 · 256 SYLLABLES</small></button>
     <button class="tab" data-mode="gods">Elder Gods<small>32 NAMES · LITANY</small></button>
   </div>
   <div class="style-toggle" id="style-toggle">
@@ -254,7 +253,7 @@
 
 <footer class="footer">
   Fully reversible · UTF-8 (English / emoji / binary) · decodes without a password too<br>
-  <b>R&#39;lyehian</b> ~8 chars/byte · <b>Deep One</b> ~5 chars/byte · <b>Elder Gods</b> ~11 chars/byte ·
+  <b>R&#39;lyehian</b> ~5 chars/byte · <b>Elder Gods</b> ~11 chars/byte ·
   single-input cap <span id="limit"></span> bytes </span>
 </footer>
 </div>
@@ -262,7 +261,6 @@
 <script src="core/base.js?v=4"></script>
 <script src="core/prng.js?v=4"></script>
 <script src="core/vocab/rlyehian.js?v=4"></script>
-<script src="core/vocab/deepone.js?v=4"></script>
 <script src="core/vocab/gods.js?v=4"></script>
 <script src="core/format.js?v=4"></script>
 <script src="core/index.js?v=4"></script>
@@ -272,14 +270,12 @@
   const $ = (id) => document.getElementById(id);
 
   const LORE = {
-    rlyehian: 'Lovecraft wrote that R\'lyehian uses a ternary numeral system. This mode builds 27 syllables as onset(3) × nucleus(3) × coda(3) — every syllable is ternary at its core, echoing the eternal chant: Ph\'nglui mglw\'nafh Cthulhu R\'lyeh wgah\'nagl fhtagn.',
-    deepone: 'The Deep Ones of The Shadow over Innsmouth speak a guttural, amphibian tongue. 256 syllables are stacked from onset clusters like kth/mgl/gh and unearthly vowel nuclei — one ciphertext byte turns into exactly one syllable (and the shortest output of the three).',
+    rlyehian: 'R\'lyehian uses the guttural 256-syllable dictionary: heavy onset clusters, unearthly vowel nuclei and closing nasals. Each syllable maps directly to one byte.',
     gods: 'Data is chunked onto 32 names of the pantheon (Cthulhu, Yog-Sothoth, Azathoth, Nyarlathotep…) and laid out as a litany. Hyphens and apostrophes belong to the names (Yog-Sothoth, Y\'golonac), so this mode\'s rhythm marks are «!» and «·».'
   };
 
   const METADATA = {
     rlyehian: { label: 'R\'lyehian' },
-    deepone: { label: 'Deep One' },
     gods: { label: 'Elder Gods' }
   };
 
