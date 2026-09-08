@@ -8,15 +8,14 @@
 
 > 当人类语言无法承载秘密，只有旧日支配者的低语才能替你守护真相。
 
-这是一个**可逆**的克苏鲁神话密码玩具：任意 UTF-8 输入（英文、表情符号、二进制文件等）都可以编码成三种“洛夫克拉夫特式语言”，并无损解码。可选密码会额外加入密钥流混淆。输出有两种风格：
+这是一个**可逆**的克苏鲁神话密码玩具：任意 UTF-8 输入（英文、表情符号、二进制文件等）都可以编码成两种“洛夫克拉夫特式语言”，并无损解码。可选密码会额外加入密钥流混淆。输出有两种风格：
 
 - **Prose（散文，默认）**：语法引擎将密码数字转换成完整的伪语言文章，包含词性、修饰词和标点，类似 [魔曰 / Abracadabra](https://github.com/SheepChef/Abracadabra) 的句子渲染方式。
 - **Verse（诗体）**：初版的咏唱风格，每个格式单元对应一个词。
 
 | 模式 | 风格 | 词表 | 散文示例 |
 |---|---|---|---|
-| **R'lyehian** | 神圣咏唱 | 27 个音节 | `«mglw» Phan'phanzy phan'phanjs «wgahn»; ngog'mglag'ngonzy ngug'ngathcq. «fhtagn»` |
-| **Deep One** | 粗砺口语 | 256 个音节 | `«khth» Khaag'khaagqy khaag'khaagjz «ghuun»; khean'shoeg'thuugqy thiin'ghaag'shounbf. «nghth»` |
+| **R'lyehian** | 粗粝口语 | 256 个音节 | `«khth» Khaag'khaagqy khaag'khaagjz «ghuun»; khean'shoeg'thuugqy thiin'ghaag'shounbf. «nghth»` |
 | **Elder Gods** | 经文式祷文 | 32 个名称 | `«Iä» Cthulhu Cthulhu «Sothoth»; Cthulhu Cthulhu. «fhtagn»` |
 
 ## 工作原理
@@ -37,14 +36,12 @@
 - **前缀无关词表。** 同一模式内没有词元是另一个词元的前缀，因此撇号、空格、`!`、`·` 等格式标记只具有视觉作用。解析时这些标记对匹配透明，甚至可以出现在词元内部。
 - **Elder Gods 的分隔符规则。** `-` 和 `'` 可能出现在名称内部（例如 `Yog-Sothoth`、`Y'golonac`、`Gla'aki`），因此该模式使用名称中不会出现的 `!` 和 `·` 作为分隔符。
 - **密码密钥流。** 第 `i` 个密钥流字节为 `FNV1a32(password ∥ big-endian u32 i) & 0xff`。空密码表示不进行混淆。
-- **Deep One 的 base 256 快速路径。** 它的数字本身就是字节，因此不需要 BigInt 转换。
 
-## 一种语言，三种风格
+## 一种语言，两种风格
 
-三种模式使用同一条字节处理流程和同一个语法引擎，区别只在于数字到音素的词表映射。它们是同一种语言的三种发音风格：
+两种模式使用同一条字节处理流程和同一个语法引擎，区别只在于数字到音素的词表映射。它们是同一种语言的两种发音风格：
 
-- **R'lyehian**：神圣咏唱。27 个音节按 onset(3) × nucleus(3) × coda(3) 构成 27 = 3³，与《克苏鲁的呼唤》中提到的三进制设定相呼应。
-- **Deep One**：粗砺口语。由厚重的辅音起始、非自然的元音核心和鼻音结尾构成 256 个等长音节。
+- **R'lyehian**：粗粝口语。使用原 Deep One 词典：厚重辅音起始、非自然元音核心和鼻音结尾构成 256 个等长音节，base-256 下每个音节直接对应一个字节。
 - **Elder Gods**：经文式祷文。词表由 Cthulhu、Yog-Sothoth、Azathoth、Nyarlathotep 等 32 个神名组成，因此只使用修饰词和标点，不使用词形后缀。
 
 ## 散文模式
@@ -84,9 +81,9 @@ const bytes = CthulhuCipher.decode(ciphertext, { mode, password });
 
 ## 限制与性能
 
-- 单次输入上限（W=5）：R'lyehian 约 14.3 MB，Elder Gods 约 33.5 MB，Deep One 约 1.1 TB；实际还受 BigInt 和内存限制。
-- 输出膨胀：Deep One 约为每字节 5 个字符，R'lyehian 约 8 个字符，Elder Gods 约 11 个字符。
-- 几 KB 输入可即时处理；1 MB Deep One 约需 0.3–3 秒，R'lyehian 和 Elder Gods 在大文件上会更慢。
+- 单次输入上限（W=5）：R'lyehian 约 1.1 TB，Elder Gods 约 33.5 MB；实际还受内存限制。
+- 输出膨胀：R'lyehian 约 5 个字符，Elder Gods 约 11 个字符。
+- 几 KB 输入可即时处理；R'lyehian 和 Elder Gods 在大文件上会更慢。
 
 ## 开发
 
@@ -96,7 +93,7 @@ const bytes = CthulhuCipher.decode(ciphertext, { mode, password });
 npm test
 ```
 
-测试覆盖三种模式、有无密码、中文、表情符号、组合字符、RTL 文本、NUL、前导零、全 `0xFF`、空输入、边界长度、词表属性、篡改密文、密钥流确定性、垃圾输入拒绝、性能，以及散文/诗体兼容性。
+测试覆盖两种模式、有无密码、中文、表情符号、组合字符、RTL 文本、NUL、前导零、全 `0xFF`、空输入、边界长度、词表属性、篡改密文、密钥流确定性、垃圾输入拒绝、性能，以及散文/诗体兼容性。
 
 ## 后续计划
 
