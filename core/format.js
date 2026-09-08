@@ -136,22 +136,6 @@
   }
 
   /**
-   * Deep One: syllables paired into capitalized phonetic bursts. The pair is
-   * joined with an apostrophe — the register's conjuction habit (the sunken
-   * city Y'ha-nthlei) — making each burst read like a deep-one name.
-   */
-  function formatDeepOne(digits, tokens, conjunction) {
-    const syllables = digitsToTokens(digits, tokens);
-    const join = conjunction === false ? '' : "'";
-    const bursts = [];
-    for (let i = 0; i < syllables.length; i += 2) {
-      const s = syllables[i] + (i + 1 < syllables.length ? join + syllables[i + 1] : '');
-      bursts.push(s.charAt(0).toUpperCase() + s.slice(1));
-    }
-    return bursts.join(' ');
-  }
-
-  /**
    * Elder Gods: litany style — each name followed by '!', every 5th name
    * separated by ' · ' instead, ending with a definitive '!'.
    */
@@ -281,7 +265,6 @@
     digitsToTokens,
     buildTrie,
     formatRlyehian,
-    formatDeepOne,
     formatGods,
     formatProse
   };
