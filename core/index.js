@@ -13,8 +13,7 @@
  *           right-justify to exactly L bytes ──► [optional] un-XOR ──► Uint8Array
  *
  * BigInt is available in every modern browser and Node, so the same code runs
- * in both. Base 256 (deepone) takes a fast path: its digits ARE the bytes, so
- * no BigInt conversion is needed.
+ * in both.
  *
  * API (works in Node via require, in browsers as the global `CthulhuCipher`):
  *   encodeBytes(bytes, {mode, style, particles, conjunction, password})  → ciphertext string
@@ -32,7 +31,6 @@
     format = require('./format');
     vocab = {
       rlyehian: require('./vocab/rlyehian'),
-      deepone: require('./vocab/deepone'),
       gods: require('./vocab/gods')
     };
   } else {
@@ -46,18 +44,11 @@
 
   const MODES = {
     rlyehian: {
-      base: 27,
+      base: 256,
       tokens: vocab.rlyehian.tokens,
       delimiters: vocab.rlyehian.delimiters,
       prose: vocab.rlyehian.prose,
       formatter: format.formatRlyehian
-    },
-    deepone: {
-      base: 256,
-      tokens: vocab.deepone.tokens,
-      delimiters: vocab.deepone.delimiters,
-      prose: vocab.deepone.prose,
-      formatter: format.formatDeepOne
     },
     gods: {
       base: 32,
